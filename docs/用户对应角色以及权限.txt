@@ -1,0 +1,107 @@
+用户角色和权限分配结果
+================================================================================
+用户: admin (ID: 1)
+  角色: admin
+  通过角色获得的权限: user:view:own, user:view:all, user:create:all, user:edit:own, user:edit:all, user:delete:all, user:export:all, user:role:manage:all, user:permission:manage:all, inspection_report:view:own, inspection_report:view:all, inspection_report:create:all, inspection_report:edit:own, inspection_report:edit:all, inspection_report:delete:own, inspection_report:delete:all, inspection_report:approve:all, inspection_report:export:all, inspection_report:print:all, announcement:view:all, announcement:create:all, announcement:edit:all, announcement:delete:all, announcement:pin:manage:all, announcement:active:manage:all, system:role:manage:all, system:permission:manage:all, system:config:edit:all, system:log:view:all
+  额外分配的权限: 无
+--------------------------------------------------------------------------------
+用户: user1 (ID: 2)
+  角色: admin
+  通过角色获得的权限: user:view:own, user:view:all, user:create:all, user:edit:own, user:edit:all, user:delete:all, user:export:all, user:role:manage:all, user:permission:manage:all, inspection_report:view:own, inspection_report:view:all, inspection_report:create:all, inspection_report:edit:own, inspection_report:edit:all, inspection_report:delete:own, inspection_report:delete:all, inspection_report:approve:all, inspection_report:export:all, inspection_report:print:all, announcement:view:all, announcement:create:all, announcement:edit:all, announcement:delete:all, announcement:pin:manage:all, announcement:active:manage:all, system:role:manage:all, system:permission:manage:all, system:config:edit:all, system:log:view:all
+  额外分配的权限: 无
+--------------------------------------------------------------------------------
+用户: user2 (ID: 3)
+  角色: user
+  通过角色获得的权限: user:view:own, user:edit:own, inspection_report:view:all, inspection_report:create:all, inspection_report:edit:own, inspection_report:delete:own
+  额外分配的权限: 无
+--------------------------------------------------------------------------------
+用户: user3 (ID: 4)
+  角色: user
+  通过角色获得的权限: user:view:own, user:edit:own, inspection_report:view:all, inspection_report:create:all, inspection_report:edit:own, inspection_report:delete:own
+  额外分配的权限: 无
+--------------------------------------------------------------------------------
+用户: user4 (ID: 5)
+  角色: user
+  通过角色获得的权限: user:view:own, user:edit:own, inspection_report:view:all, inspection_report:create:all, inspection_report:edit:own, inspection_report:delete:own
+  额外分配的权限: 无
+--------------------------------------------------------------------------------
+用户: user5 (ID: 6)
+  角色: user
+  通过角色获得的权限: user:view:own, user:edit:own, inspection_report:view:all, inspection_report:create:all, inspection_report:edit:own, inspection_report:delete:own
+  额外分配的权限: 无
+--------------------------------------------------------------------------------
+用户: user6 (ID: 7)
+  角色: user
+  通过角色获得的权限: user:view:own, user:edit:own, inspection_report:view:all, inspection_report:create:all, inspection_report:edit:own, inspection_report:delete:own
+  额外分配的权限: 无
+--------------------------------------------------------------------------------
+用户: user7 (ID: 8)
+  角色: user
+  通过角色获得的权限: user:view:own, user:edit:own, inspection_report:view:all, inspection_report:create:all, inspection_report:edit:own, inspection_report:delete:own
+  额外分配的权限: 无
+--------------------------------------------------------------------------------
+用户: user8 (ID: 9)
+  角色: user
+  通过角色获得的权限: user:view:own, user:edit:own, inspection_report:view:all, inspection_report:create:all, inspection_report:edit:own, inspection_report:delete:own
+  额外分配的权限: 无
+--------------------------------------------------------------------------------
+用户: user9 (ID: 10)
+  角色: user
+  通过角色获得的权限: user:view:own, user:edit:own, inspection_report:view:all, inspection_report:create:all, inspection_report:edit:own, inspection_report:delete:own
+  额外分配的权限: 无
+--------------------------------------------------------------------------------
+用户: user10 (ID: 11)
+  角色: user
+  通过角色获得的权限: user:view:own, user:edit:own, inspection_report:view:all, inspection_report:create:all, inspection_report:edit:own, inspection_report:delete:own
+  额外分配的权限: 无
+--------------------------------------------------------------------------------
+用户: user11 (ID: 12)
+  角色: user
+  通过角色获得的权限: user:view:own, user:edit:own, inspection_report:view:all, inspection_report:create:all, inspection_report:edit:own, inspection_report:delete:own
+  额外分配的权限: 无
+--------------------------------------------------------------------------------
+用户: user12 (ID: 13)
+  角色: user
+  通过角色获得的权限: user:view:own, user:edit:own, inspection_report:view:all, inspection_report:create:all, inspection_report:edit:own, inspection_report:delete:own
+  额外分配的权限: 无
+--------------------------------------------------------------------------------
+用户: user13 (ID: 14)
+  角色: user
+  通过角色获得的权限: user:view:own, user:edit:own, inspection_report:view:all, inspection_report:create:all, inspection_report:edit:own, inspection_report:delete:own
+  额外分配的权限: 无
+--------------------------------------------------------------------------------
+用户: user14 (ID: 15)
+  角色: user
+  通过角色获得的权限: user:view:own, user:edit:own, inspection_report:view:all, inspection_report:create:all, inspection_report:edit:own, inspection_report:delete:own
+  额外分配的权限: 无
+--------------------------------------------------------------------------------
+用户: user15 (ID: 16)
+  角色: user
+  通过角色获得的权限: user:view:own, user:edit:own, inspection_report:view:all, inspection_report:create:all, inspection_report:edit:own, inspection_report:delete:own
+  额外分配的权限: 无
+--------------------------------------------------------------------------------
+用户: user16 (ID: 17)
+  角色: user
+  通过角色获得的权限: user:view:own, user:edit:own, inspection_report:view:all, inspection_report:create:all, inspection_report:edit:own, inspection_report:delete:own
+  额外分配的权限: 无
+--------------------------------------------------------------------------------
+用户: user17 (ID: 18)
+  角色: user
+  通过角色获得的权限: user:view:own, user:edit:own, inspection_report:view:all, inspection_report:create:all, inspection_report:edit:own, inspection_report:delete:own
+  额外分配的权限: 无
+--------------------------------------------------------------------------------
+用户: user18 (ID: 19)
+  角色: user
+  通过角色获得的权限: user:view:own, user:edit:own, inspection_report:view:all, inspection_report:create:all, inspection_report:edit:own, inspection_report:delete:own
+  额外分配的权限: 无
+--------------------------------------------------------------------------------
+用户: user19 (ID: 20)
+  角色: user
+  通过角色获得的权限: user:view:own, user:edit:own, inspection_report:view:all, inspection_report:create:all, inspection_report:edit:own, inspection_report:delete:own
+  额外分配的权限: 无
+--------------------------------------------------------------------------------
+用户: user20 (ID: 21)
+  角色: user
+  通过角色获得的权限: user:view:own, user:edit:own, inspection_report:view:all, inspection_report:create:all, inspection_report:edit:own, inspection_report:delete:own
+  额外分配的权限: 无
+--------------------------------------------------------------------------------

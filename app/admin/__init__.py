@@ -1,0 +1,1 @@
+from .views import *  # 导入上面定义的管理页面视图，让其注册到 admin 中

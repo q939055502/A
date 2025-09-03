@@ -297,7 +297,7 @@ def create_staff():
     """
     try:
         data = request.get_json()
-        print(data)
+        logger.debug(f"创建人员请求数据: {data}")
 
         # 使用Pydantic验证请求参数
         try:
@@ -385,6 +385,74 @@ def update_staff(staff_id):
             message=f'更新人员信息失败: {str(e)}'
         )
 
+
+@admin_bp.route('/update_staff_password', methods=['POST'])
+@jwt_required()
+@permission_required('user', 'edit', 'all')
+def update_staff_password():
+    """
+    修改用户密码
+    ---
+    修改指定人员的密码
+    """
+    try:
+        data = request.get_json()
+        staff_id = data.get('staff_id')
+        new_password = data.get('new_password')
+
+        if staff_id is None:
+            return api_response(
+                success=False,
+                code=HTTP_400_BAD_REQUEST,
+                message='缺少人员ID参数'
+            )
+
+        if not new_password:
+            return api_response(
+                success=False,
+                code=HTTP_400_BAD_REQUEST,
+                message='缺少新密码参数'
+            )
+
+        # 验证参数类型
+        try:
+            staff_id = int(staff_id)
+        except ValueError:
+            return api_response(
+                success=False,
+                code=HTTP_400_BAD_REQUEST,
+                message='人员ID必须是整数'
+            )
+
+        # 密码长度验证
+        if len(new_password) < 6:
+            return api_response(
+                success=False,
+                code=HTTP_400_BAD_REQUEST,
+                message='密码长度不能少于6位'
+            )
+
+        # 调用服务层方法
+        updated_staff = StaffService.update_user_password(staff_id, new_password)
+
+        return api_response(
+            success=True,
+            code=HTTP_200_OK,
+            message='修改用户密码成功',
+            data=updated_staff
+        )
+    except ValueError as e:
+        return api_response(
+            success=False,
+            code=HTTP_400_BAD_REQUEST,
+            message=str(e)
+        )
+    except Exception as e:
+        return api_response(
+            success=False,
+            code=HTTP_500_INTERNAL_SERVER_ERROR,
+            message=f'修改用户密码失败: {str(e)}'
+        )
 
 @admin_bp.route('/update_staff_status', methods=['POST'])
 @jwt_required()
@@ -650,6 +718,37 @@ def create_role():
         )
 
 
+@admin_bp.route('/delete_role/<int:role_id>', methods=['DELETE'])
+@jwt_required()
+@permission_required('system', 'role:manage', 'all')
+def delete_role(role_id):
+    """
+    删除角色
+    ---    
+    逻辑删除指定角色（将is_active设置为False）
+    """
+    try:
+        # 调用服务层方法
+        StaffService.delete_role(role_id)
+
+        return api_response(
+            success=True,
+            code=HTTP_200_OK,
+            message='删除角色成功'
+        )
+    except ValueError as e:
+        return api_response(
+            success=False,
+            code=HTTP_404_NOT_FOUND,
+            message=str(e)
+        )
+    except Exception as e:
+        return api_response(
+            success=False,
+            code=HTTP_500_INTERNAL_SERVER_ERROR,
+            message=f'删除角色失败: {str(e)}'
+        )
+
 @admin_bp.route('/update_role_permissions/<int:role_id>', methods=['POST'])
 @jwt_required()
 @permission_required('system', 'permission:manage', 'all')
@@ -657,19 +756,17 @@ def update_role_permissions(role_id):
     """
     更新角色权限
     ---
-    为指定角色添加或移除权限
+    删除角色现有权限并添加新权限
     请求体格式: {
-        "add_permission_ids": [1, 2, 3],  # 要添加的权限ID列表
-        "remove_permission_ids": [4, 5]   # 要移除的权限ID列表
+        "permission_ids": [1, 2, 3]  # 新的权限ID列表
     }
     """
     try:
         data = request.get_json()
-        add_permission_ids = data.get('add_permission_ids', [])
-        remove_permission_ids = data.get('remove_permission_ids', [])
+        permission_ids = data.get('permission_ids', [])
 
         # 调用服务层方法
-        StaffService.update_role_permissions(role_id, add_permission_ids, remove_permission_ids)
+        StaffService.set_role_permissions(role_id, permission_ids)
 
         return api_response(
             success=True,

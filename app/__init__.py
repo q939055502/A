@@ -21,7 +21,9 @@ mail = Mail()
 from flask_jwt_extended.exceptions import (
     NoAuthorizationError,
     RevokedTokenError,
-    JWTDecodeError
+    JWTDecodeError,
+    WrongTokenError,
+    FreshTokenRequired
 )
 
 # 导入项目模块
@@ -92,6 +94,10 @@ def create_app():
     from app.utils.request_hooks import register_before_request
     register_before_request(app)
     
+    # 配置日志系统
+    from app.utils.logger import setup_logger
+    setup_logger(app)
+    
     # ------------------------------
     # JWT相关配置和处理
     # ------------------------------
@@ -124,27 +130,9 @@ def create_app():
     # 全局异常处理
     # ------------------------------
     
-    @app.errorhandler(400)
-    def bad_request(error):
-        return jsonify({
-            "success": False,
-            "message": "请求参数错误，请检查输入"
-        }), 400
-    
-    @app.errorhandler(HTTP_404_NOT_FOUND)
-    def page_not_found(error):
-        return jsonify({
-            "success": False,
-            "message": "请求的接口不存在"
-        }), HTTP_404_NOT_FOUND
-    
-    @app.errorhandler(HTTP_500_INTERNAL_SERVER_ERROR)
-    def server_error(error):
-        app.logger.error(f"服务器内部错误: {str(error)}")
-        return jsonify({
-            "success": False,
-            "message": "服务器内部错误，请稍后重试"
-        }), HTTP_500_INTERNAL_SERVER_ERROR
+    # 导入并注册全局异常处理
+    from app.errors import register_global_errors
+    register_global_errors(app)
     
     # ------------------------------
     # 注册蓝图和CLI命令

@@ -81,10 +81,12 @@ def validate_request_data(required_fields=None):
             message=f"请求数据解析错误: {str(e)}"
         )
 
+from .logger import logger
+
 def handle_exception(e, default_message="操作失败"):
     """统一异常处理
 
-    处理API调用中的异常，返回标准化的错误响应。
+    处理API调用中的异常，返回标准化的错误响应，并记录异常日志。
 
     Args:
         e (Exception): 捕获的异常
@@ -93,7 +95,8 @@ def handle_exception(e, default_message="操作失败"):
     Returns:
         tuple: Flask响应对象和HTTP状态码
     """
-
+    request_id = getattr(g, 'request_id', generate_request_id())
+    logger.error(f"{default_message}: {str(e)}, 请求ID: {request_id}")
     return api_response(
         success=False,
         code=HTTP_500_INTERNAL_SERVER_ERROR,

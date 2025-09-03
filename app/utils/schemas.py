@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field, field_validator
+from pydantic import BaseModel, EmailStr, Field, validator
 from datetime import date
 from typing import List, Optional
 
@@ -27,7 +27,7 @@ class StaffCreate(StaffBase):
     password: str = Field(..., min_length=6, max_length=20, description='密码')
     role_ids: Optional[List[int]] = Field(None, description='角色ID列表')
 
-    @field_validator('password')
+    @validator('password')
     def validate_password(cls, v):
         if not v[0].isalpha():
             raise ValueError('密码必须以字母开头')
@@ -52,7 +52,7 @@ class StaffUpdate(BaseModel):
     password: Optional[str] = Field(None, min_length=6, max_length=20, description='密码')
     id_card_number: Optional[str] = Field(None, pattern=r'^\d{17}[\dXx]$', description='身份证号')
 
-    @field_validator('password')
+    @validator('password')
     def validate_password(cls, v):
         if v is None:
             return v

@@ -291,7 +291,7 @@ class User(db.Model):
     def get_by_username(cls, username):
         
         user = cls.query.filter_by(username=username).first()
-        print(user)
+        logger.debug(f"通过用户名 {username} 查询用户: {user}")
         return user
 
     @classmethod
@@ -338,13 +338,14 @@ def send_verification_email(recipient, code):
         dev_env = os.environ.get('FLASK_ENV') == 'development'
 
         if test_mode or dev_env:
-            # 在测试模式或开发环境下，打印验证码
-            print(f'===== 测试验证码: {code} =====')
-            logger.info(f'测试/开发环境下模拟发送邮件到 {email}: {msg.body}')
+            # 在测试模式或开发环境下，打印验证码已移除
+            # print(f'===== 测试验证码: {code} =====')
+            logger.debug(f'测试/开发环境下模拟发送邮件到 {email}: {msg.body}')
             return True, f'测试/开发环境下邮件已模拟发送，验证码: {code}'
-        print(test_mode)
-        print(dev_env)
-        print('-----------------------------------------------------   ')
+        # 环境变量测试打印已移除
+        # print(test_mode)
+        # print(dev_env)
+        # print('-----------------------------------------------------   ')
 
 
         # 生产环境下实际发送邮件

@@ -1,6 +1,7 @@
 from app.db import db
 from app.models.report.inspection_report import InspectionReport
 from app.models.user.user import User
+from app.services.permission_service import PermissionService
 import logging
 import datetime
 from app.utils.date_time import string_to_datetime, datetime_to_string
@@ -17,13 +18,15 @@ class ReportService:
         return InspectionReport.query.filter_by(is_deleted=False).count()
 
     @staticmethod
-    def get_reports_paginated(page=1, per_page=10, search_keyword=''):
+    def get_reports_paginated(page=1, per_page=10, search_keyword='', user_id=None, scope='all'):
         """分页获取检测报告
 
         Args:
             page (int): 当前页码
             per_page (int): 每页条数
             search_keyword (str): 搜索关键字
+            user_id (int): 用户ID，用于权限过滤
+            scope (str): 权限范围，'all'或'own'
 
         Returns:
             dict: 包含报告列表和分页信息的字典
@@ -31,7 +34,19 @@ class ReportService:
         per_page = min(per_page, 1000)
         # 只查询未软删除的报告
         query = InspectionReport.query.filter_by(is_deleted=False)
+
+        # 如果scope为'own'且提供了user_id，添加registrant_id过滤
         
+        # 确保user_id为整数类型
+        try:
+            user_id_int = int(user_id)
+        except (ValueError, TypeError):
+            user_id_int = None
+            print(f"警告: 无效的user_id: {user_id}")
+
+        if scope == 'own' and user_id_int is not None:
+            query = query.filter_by(registrant_id=user_id_int)
+
         # 如果提供了搜索关键字，添加模糊查询条件
         if search_keyword:
             query = query.filter(
@@ -67,39 +82,64 @@ class ReportService:
         ).all()
         return [report.to_dict() for report in reports]
 
-    # @staticmethod
-    # def submit_report(report_data, user_id):
-    #     """提交新报告
+    @staticmethod
+    def get_reports_by_codes(report_codes, user_id, has_all_permission):
+        """根据报告编号数组获取报告数据
 
-    #     Args:
-    #         report_data (dict): 报告数据
-    #         user_id (int): 关联的用户ID
+        Args:
+            report_codes (list): 报告编号数组
+            user_id (str): 用户ID
+            has_all_permission (bool): 是否有'all'权限
 
-    #     Returns:
-    #         tuple: (报告对象或None, 错误信息或None)
-    #     """
-    #     try:
-    #         # 检查用户是否存在
-    #         user = User.query.get(user_id)
-    #         if not user:
-    #             return None, '关联的用户不存在'
+        Returns:
+            dict: 包含报告数据和统计信息的字典
+        """
+        try:
+            # 确保user_id为整数类型
+            try:
+                user_id_int = int(user_id)
+            except (ValueError, TypeError):
+                user_id_int = None
+                logging.warning(f"无效的user_id: {user_id}")
 
-    #         new_report = InspectionReport(
-    #             project_name=report_data.get('project_name'),
-    #             report_code=report_data.get('report_code'),
-    #             client_unit=report_data.get('client_unit'),
-    #             inspection_object=report_data.get('inspection_object'),
-    #             inspection_conclusion=report_data.get('inspection_conclusion'),
-    #             registrant=user.username  # 设置登记人为创建报告的用户账号
-    #             # 可根据需要添加其他必要的报告字段
-    #         )
-    #         db.session.add(new_report)
-    #         db.session.commit()
-    #         return new_report, None
-    #     except Exception as e:
-    #         db.session.rollback()
-    #         logging.error(f"提交报告失败: {str(e)}")
-    #         return None, f'提交报告失败: {str(e)}'
+            # 查询未软删除的报告
+            reports = InspectionReport.query.filter(
+                InspectionReport.report_code.in_(report_codes),
+                InspectionReport.is_deleted == False
+            ).all()
+
+            # 根据权限过滤报告
+            filtered_reports = []
+            failed_codes = []
+            report_code_set = set(report_codes)
+
+            for report in reports:
+                # 如果有'all'权限或报告属于当前用户，则添加到结果中
+                if has_all_permission or str(report.registrant_id) == user_id:
+                    filtered_reports.append(report.to_dict())
+                report_code_set.remove(report.report_code)
+
+            # 添加未找到的报告编号到失败列表
+            failed_codes.extend(report_code_set)
+
+            return {
+                'success': True,
+                'message': '获取报告成功',
+                'data': {
+                    'total_count': len(report_codes),
+                    'success_count': len(filtered_reports),
+                    'failed_count': len(failed_codes),
+                    'reports': filtered_reports,
+                    'failed_codes': failed_codes
+                }
+            }
+        except Exception as e:
+            logging.error(f"获取报告失败: {str(e)}")
+            return {
+                'success': False,
+                'message': f'获取报告失败: {str(e)}',
+                'data': {}
+            }
 
     @staticmethod
     def associate_report_with_user(report_id, user_id):
@@ -167,6 +207,487 @@ class ReportService:
             'failed_reports': failed_reports,
             'message': f'成功删除 {success_count} 个报告，失败 {failed_count} 个'
         }
+
+    @staticmethod
+    def batch_create_reports(reports_data, user_id):
+        """批量创建报告
+
+        Args:
+            reports_data (list): 报告数据列表
+            user_id (int): 当前登录用户ID
+
+        Returns:
+            dict: 包含创建结果的字典
+        """
+        try:
+            # 检查用户是否存在
+            user = User.query.get(user_id)
+            if not user:
+                return {'success': False, 'message': '用户不存在', 'code': 404}
+
+            success_count = 0
+            failed_count = 0
+            failed_reports = []
+            created_reports = []
+
+            for data in reports_data:
+                try:
+                    # 确保报告编号必须存在
+                    if 'report_code' not in data or not data['report_code']:
+                        failed_count += 1
+                        failed_reports.append({
+                            'data': data,
+                            'message': '报告编号必须上传'
+                        })
+                        continue
+
+                    # 检查报告编号是否已存在
+                    existing_report = InspectionReport.query.filter_by(report_code=data['report_code']).first()
+                    if existing_report:
+                        failed_count += 1
+                        failed_reports.append({
+                            'data': data,
+                            'message': '报告编号已存在'
+                        })
+                        continue
+
+                    # 解析日期字段
+                    # 委托日期解析
+                    commission_date_str = data.get('commission_date')
+                    if commission_date_str:
+                        try:
+                            # 不指定格式，让string_to_datetime函数自动识别日期格式（包括中文格式）
+                            commission_date = string_to_datetime(commission_date_str).date()
+                        except ValueError:
+                            failed_count += 1
+                            failed_reports.append({
+                                'data': data,
+                                'message': '委托日期格式不正确，请使用YYYY-MM-DD、YYYY/MM/DD、YYYY年MM月DD日等格式'
+                            })
+                            continue
+                    else:
+                        commission_date = datetime.datetime.now(datetime.timezone.utc).date()
+
+                    # 受理日期解析
+                    acceptance_date_str = data.get('acceptance_date')
+                    if acceptance_date_str:
+                        try:
+                            # 不指定格式，让string_to_datetime函数自动识别日期格式（包括中文格式）
+                            acceptance_date = string_to_datetime(acceptance_date_str).date()
+                        except ValueError:
+                            failed_count += 1
+                            failed_reports.append({
+                                'data': data,
+                                'message': '受理日期格式不正确，请使用YYYY-MM-DD、YYYY/MM/DD、YYYY年MM月DD日等格式'
+                            })
+                            continue
+                    else:
+                        acceptance_date = None
+
+                    # 抽样日期解析
+                    sampling_date_str = data.get('sampling_date')
+                    if sampling_date_str:
+                        try:
+                            # 不指定格式，让string_to_datetime函数自动识别日期格式（包括中文格式）
+                            sampling_date = string_to_datetime(sampling_date_str).date()
+                        except ValueError:
+                            failed_count += 1
+                            failed_reports.append({
+                                'data': data,
+                                'message': '抽样日期格式不正确，请使用YYYY-MM-DD、YYYY/MM/DD、YYYY年MM月DD日等格式'
+                            })
+                            continue
+                    else:
+                        sampling_date = None
+
+                    # 开始日期解析
+                    start_date_str = data.get('start_date')
+                    if start_date_str:
+                        try:
+                            # 不指定格式，让string_to_datetime函数自动识别日期格式（包括中文格式）
+                            start_date = string_to_datetime(start_date_str).date()
+                        except ValueError:
+                            failed_count += 1
+                            failed_reports.append({
+                                'data': data,
+                                'message': '开始日期格式不正确，请使用YYYY-MM-DD、YYYY/MM/DD、YYYY年MM月DD日等格式'
+                            })
+                            continue
+                    else:
+                        start_date = None
+
+                    # 结束日期解析
+                    end_date_str = data.get('end_date')
+                    if end_date_str:
+                        try:
+                            # 不指定格式，让string_to_datetime函数自动识别日期格式（包括中文格式）
+                            end_date = string_to_datetime(end_date_str).date()
+                        except ValueError:
+                            failed_count += 1
+                            failed_reports.append({
+                                'data': data,
+                                'message': '结束日期格式不正确，请使用YYYY-MM-DD、YYYY/MM/DD、YYYY年MM月DD日等格式'
+                            })
+                            continue
+                    else:
+                        end_date = None
+
+                    # 检测完成日期解析
+                    tester_date_str = data.get('tester_date')
+                    if tester_date_str:
+                        try:
+                            # 不指定格式，让string_to_datetime函数自动识别日期格式（包括中文格式）
+                            tester_date = string_to_datetime(tester_date_str).date()
+                        except ValueError:
+                            failed_count += 1
+                            failed_reports.append({
+                                'data': data,
+                                'message': '检测完成日期格式不正确，请使用YYYY-MM-DD、YYYY/MM/DD、YYYY年MM月DD日等格式'
+                            })
+                            continue
+                    else:
+                        tester_date = None
+
+                    # 审核日期解析
+                    review_date_str = data.get('review_date')
+                    if review_date_str:
+                        try:
+                            # 不指定格式，让string_to_datetime函数自动识别日期格式（包括中文格式）
+                            review_date = string_to_datetime(review_date_str).date()
+                        except ValueError:
+                            failed_count += 1
+                            failed_reports.append({
+                                'data': data,
+                                'message': '审核日期格式不正确，请使用YYYY-MM-DD、YYYY/MM/DD、YYYY年MM月DD日等格式'
+                            })
+                            continue
+                    else:
+                        review_date = None
+
+                    # 批准日期解析
+                    approve_date_str = data.get('approve_date')
+                    if approve_date_str:
+                        try:
+                            # 不指定格式，让string_to_datetime函数自动识别日期格式（包括中文格式）
+                            approve_date = string_to_datetime(approve_date_str).date()
+                        except ValueError:
+                            failed_count += 1
+                            failed_reports.append({
+                                'data': data,
+                                'message': '批准日期格式不正确，请使用YYYY-MM-DD、YYYY/MM/DD、YYYY年MM月DD日等格式'
+                            })
+                            continue
+                    else:
+                        approve_date = None
+
+                    # 签发日期解析
+                    issue_date_str = data.get('issue_date')
+                    if issue_date_str:
+                        try:
+                            # 不指定格式，让string_to_datetime函数自动识别日期格式（包括中文格式）
+                            issue_date = string_to_datetime(issue_date_str).date()
+                        except ValueError:
+                            failed_count += 1
+                            failed_reports.append({
+                                'data': data,
+                                'message': '签发日期格式不正确，请使用YYYY-MM-DD、YYYY/MM/DD、YYYY年MM月DD日等格式'
+                            })
+                            continue
+                    else:
+                        issue_date = None
+
+                    # 创建新报告
+                    current_time = datetime.datetime.now(datetime.timezone.utc)
+
+                    new_report = InspectionReport(
+                        # 报告标识信息
+                        report_code=data['report_code'],
+                        report_status=data.get('report_status'),
+                        report_date=current_time.date(),
+                        qrcode_content=data.get('qrcode_content'),
+                        attachment_paths=data.get('attachment_paths'),
+
+                        # 工程基本信息
+                        project_name=data['project_name'],
+                        project_location=data.get('project_location'),
+                        project_type=data.get('project_type'),
+                        project_stage=data.get('project_stage'),
+                        construction_unit=data.get('construction_unit'),
+                        contractor=data.get('contractor'),
+                        supervisor=data.get('supervisor'),
+                        witness_unit=data.get('witness_unit'),
+                        remarks=data.get('remarks'),
+
+                        # 委托与受理信息
+                        client_unit=data['client_unit'],
+                        client_contact=data.get('client_contact'),
+                        acceptance_date=acceptance_date,
+                        commission_date=commission_date,
+                        commission_code=data.get('commission_code'),
+                        salesperson=data.get('salesperson', ''),
+
+                        # 检测机构与资质
+                        inspection_unit=data['inspection_unit'],
+                        certificate_no=data.get('certificate_no'),
+                        contact_address=data.get('contact_address'),
+                        contact_phone=data.get('contact_phone'),
+
+                        # 检测对象与参数
+                        inspection_object=data['inspection_object'],
+                        object_part=data.get('object_part'),
+                        object_spec=data.get('object_spec'),
+                        design_spec=data.get('design_spec'),
+                        inspection_type=data['inspection_type'],
+
+                        # 检测项目与结果
+                        inspection_items=data.get('inspection_items'),
+                        test_items=data.get('test_items'),
+                        inspection_quantity=data.get('inspection_quantity'),
+                        measurement_unit=data.get('measurement_unit'),
+                        inspection_conclusion=data['inspection_conclusion'],
+                        conclusion_description=data.get('conclusion_description'),
+                        is_recheck=data.get('is_recheck', False),
+
+                        # 抽样与检测流程
+                        sampling_method=data.get('sampling_method'),
+                        sampling_date=sampling_date,
+                        sampler=data.get('sampler'),
+                        start_date=start_date,
+                        end_date=end_date,
+                        inspection_code=data.get('inspection_code'),
+                        inspector=data.get('inspector'),
+                        tester_date=tester_date,
+
+                        # 审批与归档
+                        review_date=review_date,
+                        reviewer=data.get('reviewer'),
+                        approve_date=approve_date,
+                        approver=data.get('approver'),
+                        issue_date=issue_date,
+                        # 其他字段
+                        created_at=current_time,
+                        updated_at=current_time,
+                        is_deleted=False,
+                        registrant_id=user_id,
+                        registrant=user.username,
+                        last_modified_by_id=user_id
+                    )
+
+                    db.session.add(new_report)
+                    created_reports.append(new_report.to_dict())
+                    success_count += 1
+
+                except Exception as e:
+                    failed_count += 1
+                    failed_reports.append({
+                        'data': data,
+                        'message': f'创建失败: {str(e)}'
+                    })
+
+            db.session.commit()
+            return {
+                'success': True,
+                'message': f'批量创建报告完成，成功 {success_count} 个，失败 {failed_count} 个',
+                'code': 201,
+                'data': {
+                    'total_count': len(reports_data),
+                    'success_count': success_count,
+                    'failed_count': failed_count,
+                    'failed_reports': failed_reports,
+                    'created_reports': created_reports
+                }
+            }
+
+        except Exception as e:
+            db.session.rollback()
+            logging.error(f"批量创建报告失败: {str(e)}")
+            return {
+                'success': False,
+                'message': f'批量创建报告失败: {str(e)}',
+                'code': 500,
+                'data': {}
+            }
+
+    @staticmethod
+    def batch_update_reports(reports_data, user_id):
+        """批量更新报告
+
+        Args:
+            reports_data (list): 报告更新数据列表，每个元素包含report_code和要更新的字段
+            user_id (int): 当前登录用户ID
+
+        Returns:
+            dict: 包含更新结果的字典
+        """
+        try:
+            success_count = 0
+            failed_count = 0
+            failed_reports = []
+            updated_reports = []
+            current_time = datetime.datetime.now(datetime.timezone.utc)
+
+            # 日期字段列表，需要从模型定义中同步更新
+            date_fields = ['commission_date', 'report_date', 'acceptance_date', 'sampling_date', 
+                          'start_date', 'end_date', 'tester_date', 'review_date', 'approve_date', 'issue_date']
+            # 日期时间字段列表
+            datetime_fields = ['created_at']
+
+            # 必填字段列表
+            required_fields = ['project_name', 'client_unit', 'inspection_object', 'inspection_type', 'inspection_conclusion', 'inspection_unit']
+
+            # 检查用户是否拥有'inspection_report'的'edit'权限且scope为'all'
+            # 注意：需要先获取user对象，这里假设通过user_id从数据库获取
+            # 实际应用中可能需要根据项目架构调整获取方式
+            user = User.query.get(user_id)
+            if not user:
+                return {
+                    'success': False,
+                    'message': '无法获取当前用户信息',
+                    'code': 400,
+                    'data': {
+                        'total_count': len(reports_data),
+                        'success_count': 0,
+                        'failed_count': len(reports_data),
+                        'failed_reports': [{'data': item, 'message': '无法获取当前用户信息'} for item in reports_data],
+                        'updated_reports': []
+                    }
+                }
+            
+            has_all_permission = PermissionService.has_user_permission(user, 'inspection_report', 'edit', 'all')
+
+            for item in reports_data:
+                try:
+                    # 检查是否包含report_code
+                    if 'report_code' not in item:
+                        failed_count += 1
+                        failed_reports.append({
+                            'data': item,
+                            'message': '缺少report_code字段'
+                        })
+                        continue
+
+                    report_code = item['report_code'].strip()
+                    # 移除report_code字段，因为不可修改
+                    update_data = item.copy()
+                    del update_data['report_code']
+
+                    # 查询报告
+                    report = InspectionReport.query.filter_by(report_code=report_code, is_deleted=False).first()
+                    if not report:
+                        failed_count += 1
+                        failed_reports.append({
+                            'data': item,
+                            'message': f'未找到报告编号为{report_code}的报告或报告已被删除'
+                        })
+                        continue
+
+                    # 如果用户没有'all'权限，检查报告是否属于当前用户
+                    if not has_all_permission and str(report.registrant_id) != user_id:
+                        failed_count += 1
+                        failed_reports.append({
+                            'data': item,
+                            'message': f'无权限修改报告编号为{report_code}的报告，该报告不属于您'
+                        })
+                        continue
+
+                    # 检查必填字段
+                    missing_fields = []
+                    for field in required_fields:
+                        if field in update_data and not update_data[field]:
+                            missing_fields.append(field)
+                    if missing_fields:
+                        failed_count += 1
+                        failed_reports.append({
+                            'data': item,
+                            'message': f'缺少必填字段: {missing_fields}'
+                        })
+                        continue
+
+                    # 更新报告字段
+                    update_success = True
+                    for key, value in update_data.items():
+                        if hasattr(report, key):
+                            # 处理日期字段
+                            if key in date_fields and value:
+                                try:
+                                    # 检查value是否已经是datetime.date类型
+                                    if isinstance(value, datetime.date):
+                                        date_value = value
+                                    else:
+                                        # 不指定格式，让string_to_datetime函数自动识别日期格式（包括中文格式）
+                                        date_value = string_to_datetime(value).date()
+                                    setattr(report, key, date_value)
+                                except ValueError as ve:
+                                    failed_count += 1
+                                    failed_reports.append({
+                                        'data': item,
+                                        'message': f'{key}日期格式不正确，请使用YYYY-MM-DD、YYYY/MM/DD、YYYY年MM月DD日等格式: {str(ve)}'
+                                    })
+                                    update_success = False
+                                    # 跳过当前报告的其他字段更新
+                                    break
+                            # 处理日期时间字段
+                            elif key in datetime_fields and value:
+                                try:
+                                    # 不指定格式，利用string_to_datetime函数的自动匹配功能
+                                    datetime_value = string_to_datetime(value)
+                                    setattr(report, key, datetime_value)
+                                except ValueError as ve:
+                                    failed_count += 1
+                                    failed_reports.append({
+                                        'data': item,
+                                        'message': f'{key}日期时间格式不正确，支持的格式有: YYYY-MM-DD HH:MM:SS, YYYY/MM/DD HH:MM:SS等: {str(ve)}'
+                                    })
+                                    update_success = False
+                                    # 跳过当前报告的其他字段更新
+                                    break
+                            else:
+                                setattr(report, key, value)
+                        # 忽略不存在的字段
+
+                    if update_success:
+                        # 设置最后修改人和更新时间
+                        report.last_modified_by_id = int(user_id)
+                        report.updated_at = current_time
+                        
+                        updated_reports.append(report.to_dict())
+                        success_count += 1
+
+                except Exception as e:
+                    failed_count += 1
+                    failed_reports.append({
+                        'data': item,
+                        'message': f'更新失败: {str(e)}'
+                    })
+
+            db.session.commit()
+            return {
+                'success': True,
+                'message': f'批量更新报告完成，成功 {success_count} 个，失败 {failed_count} 个',
+                'code': 200,
+                'data': {
+                    'total_count': len(reports_data),
+                    'success_count': success_count,
+                    'failed_count': failed_count,
+                    'failed_reports': failed_reports,
+                    'updated_reports': updated_reports
+                }
+            }
+
+        except Exception as e:
+            db.session.rollback()
+            logging.error(f"批量更新报告失败: {str(e)}")
+            return {
+                'success': False,
+                'message': f'批量更新报告失败: {str(e)}',
+                'code': 500,
+                'data': {
+                    'total_count': len(reports_data) if reports_data else 0,
+                    'success_count': 0,
+                    'failed_count': len(reports_data) if reports_data else 0,
+                    'failed_reports': []
+                }
+            }
 
     @staticmethod
     def get_report_by_code(report_code):
@@ -465,57 +986,57 @@ class ReportService:
             logging.error(f"添加报告失败: {str(e)}")
             return {'success': False, 'message': f'添加报告失败: {str(e)}', 'code': 500}
 
-    @staticmethod
-    def search_reports(search_param):
-        """搜索报告
+    # @staticmethod
+    # def search_reports(search_param):
+    #     """搜索报告
 
-        Args:
-            search_param (str): 搜索参数
+    #     Args:
+    #         search_param (str): 搜索参数
 
-        Returns:
-            dict: 包含搜索结果的字典
-        """
-        try:
-            if not search_param:
-                return {'success': False, 'message': '搜索参数不能为空', 'code': 400, 'data': {}}
+    #     Returns:
+    #         dict: 包含搜索结果的字典
+    #     """
+    #     try:
+    #         if not search_param:
+    #             return {'success': False, 'message': '搜索参数不能为空', 'code': 400, 'data': {}}
 
-            # 检测是否包含中文
-            import re
-            contains_chinese = bool(re.search(r'[\u4e00-\u9fa5]', search_param))
+    #         # 检测是否包含中文
+    #         import re
+    #         contains_chinese = bool(re.search(r'[\u4e00-\u9fa5]', search_param))
 
-            # 根据是否包含中文选择查询字段
-            if contains_chinese:
-                # 按工程名称模糊查询（排除软删除的数据）
-                reports = InspectionReport.query.filter(
-                    InspectionReport.project_name.like(f'%{search_param}%')
-                ).filter_by(is_deleted=False).all()
-                # 按工程名称中查询字符串的位置排序
-                def sort_by_match_degree(report):
-                    return report.project_name.find(search_param)
-            else:
-                # 按报告编号模糊查询（排除软删除的数据）
-                reports = InspectionReport.query.filter(
-                    InspectionReport.report_code.like(f'%{search_param}%')
-                ).filter_by(is_deleted=False).all()
-                # 按报告编号中查询字符串的位置排序
-                def sort_by_match_degree(report):
-                    return report.report_code.find(search_param)
+    #         # 根据是否包含中文选择查询字段
+    #         if contains_chinese:
+    #             # 按工程名称模糊查询（排除软删除的数据）
+    #             reports = InspectionReport.query.filter(
+    #                 InspectionReport.project_name.like(f'%{search_param}%')
+    #             ).filter_by(is_deleted=False).all()
+    #             # 按工程名称中查询字符串的位置排序
+    #             def sort_by_match_degree(report):
+    #                 return report.project_name.find(search_param)
+    #         else:
+    #             # 按报告编号模糊查询（排除软删除的数据）
+    #             reports = InspectionReport.query.filter(
+    #                 InspectionReport.report_code.like(f'%{search_param}%')
+    #             ).filter_by(is_deleted=False).all()
+    #             # 按报告编号中查询字符串的位置排序
+    #             def sort_by_match_degree(report):
+    #                 return report.report_code.find(search_param)
 
-            reports_sorted = sorted(reports, key=sort_by_match_degree)
+    #         reports_sorted = sorted(reports, key=sort_by_match_degree)
 
-            # 转换为字典列表
-            reports_dict = [report.to_dict() for report in reports_sorted]
+    #         # 转换为字典列表
+    #         reports_dict = [report.to_dict() for report in reports_sorted]
 
-            return {
-                'success': True,
-                'code': 200,
-                'message': '操作成功',
-                'data': {
-                    'reports': reports_dict,
-                    'total_count': len(reports_dict)
-                }
-            }
-        except Exception as e:
-            logging.error(f"搜索报告失败: {str(e)}")
-            return {'success': False, 'message': f'搜索报告失败: {str(e)}', 'code': 500, 'data': {}}
+    #         return {
+    #             'success': True,
+    #             'code': 200,
+    #             'message': '操作成功',
+    #             'data': {
+    #                 'reports': reports_dict,
+    #                 'total_count': len(reports_dict)
+    #             }
+    #         }
+    #     except Exception as e:
+    #         logging.error(f"搜索报告失败: {str(e)}")
+    #         return {'success': False, 'message': f'搜索报告失败: {str(e)}', 'code': 500, 'data': {}}
 

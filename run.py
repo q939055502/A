@@ -27,8 +27,18 @@ def make_shell_context():
 
 if __name__ == '__main__':
     # 从环境变量获取配置
-    host = os.getenv('IP', '0.0.0.0')
+    # 设置只接受回路请求
+    host = '127.0.0.1'
     port = int(os.getenv('PORT', 5000))
     debug = os.getenv('FLASK_DEBUG', 'true').lower() == 'true'
     
-    app.run(host=host, port=port, debug=debug)
+    if debug:
+        # 开发环境使用Flask内置服务器
+        app.run(host=host, port=port, debug=debug)
+    else:
+        # 生产环境使用Waitress
+        from waitress import serve
+        serve(app, host=host, port=port)
+
+
+

@@ -95,7 +95,7 @@ class StaffService:
         Returns:
             dict: 创建后的人员信息
         """
-        data = staff_data.model_dump()
+        data = staff_data.dict()
         try:
             # 检查用户名是否已存在
             if User.query.filter_by(username=data['username']).first():
@@ -152,8 +152,7 @@ class StaffService:
                 try:
                     staff_dict = new_staff.to_dict()
                     logger.info(f"用户数据转换成功: {new_staff.username}")
-                    print(staff_dict)
-                    print('999999999999999999999999999999999999999')
+                    logger.debug(f"转换后的用户数据: {staff_dict}")
                     return staff_dict
                 except Exception as e:
                     logger.error(f"转换用户数据到字典失败: {str(e)}", exc_info=True)
@@ -184,7 +183,7 @@ class StaffService:
         Returns:
             dict: 更新后的人员信息
         """
-        data = staff_data.model_dump(exclude_unset=True)
+        data = staff_data.dict(exclude_unset=True)
         try:
             staff = User.query.get(staff_id)
             if not staff or staff.deleted_at:
@@ -445,7 +444,7 @@ class StaffService:
             list: 角色列表
         """
         try:
-            roles = Role.query.all()
+            roles = Role.query.filter_by(is_active=True).all()
 
             # 转换为字典列表
             role_dicts = [{
@@ -542,6 +541,43 @@ class StaffService:
         except Exception as e:
             db.session.rollback()
             logger.error(f"更新角色权限失败: {str(e)}")
+            raise
+
+    @staticmethod
+    def set_role_permissions(role_id, permission_ids):
+        """
+        设置角色权限（替换现有权限）
+
+        Args:
+            role_id (int): 角色ID
+            permission_ids (list): 新的权限ID列表
+        """
+        try:
+            role = Role.query.get(role_id)
+            if not role:
+                raise ValueError("角色不存在")
+
+            # 验证所有权限是否存在
+            for permission_id in permission_ids:
+                permission = Permission.query.get(permission_id)
+                if not permission:
+                    raise ValueError(f"权限ID {permission_id} 不存在")
+
+            # 清空现有权限
+            role.permissions.clear()
+
+            # 添加新权限
+            for permission_id in permission_ids:
+                permission = Permission.query.get(permission_id)
+                role.permissions.append(permission)
+
+            # 保存更改
+            db.session.commit()
+
+            return True
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"设置角色权限失败: {str(e)}")
             raise
 
     @staticmethod
@@ -713,6 +749,59 @@ class StaffService:
             raise
 
     @staticmethod
+    def delete_role(role_id):
+        """
+        删除角色（逻辑删除，将is_active设置为False）
+
+        Args:
+            role_id (int): 角色ID
+
+        Returns:
+            bool: 是否成功
+        """
+        try:
+            role = Role.query.get(role_id)
+            if not role:
+                raise ValueError("角色不存在")
+
+            # 逻辑删除角色
+            role.is_active = False
+            db.session.commit()
+
+            return True
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"删除角色失败: {str(e)}")
+            raise
+
+    @staticmethod
+    def update_user_password(staff_id: int, new_password: str):
+        """
+        修改用户密码
+
+        Args:
+            staff_id (int): 人员ID
+            new_password (str): 新密码
+
+        Returns:
+            dict: 更新后的用户信息
+        """
+        try:
+            staff = User.query.get(staff_id)
+            if not staff or staff.deleted_at:
+                raise ValueError("人员不存在")
+
+            # 设置新密码
+            staff.set_password(new_password)
+            db.session.commit()
+
+            return staff.to_dict()
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"修改用户密码失败: {str(e)}")
+            raise
+
+    @staticmethod
     def get_all_roles_with_permissions():
         """
         获取所有角色及其权限
@@ -722,7 +811,7 @@ class StaffService:
         """
         try:
             # 获取所有角色
-            roles = Role.query.all()
+            roles = Role.query.filter_by(is_active=True).all()
 
             # 构建角色及其权限的列表
             roles_with_permissions = []

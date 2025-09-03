@@ -45,8 +45,8 @@ class InspectionReport(db.Model):
     test_items = db.Column(db.String(500), comment='检测项详情')  # 字符串存储各检测项的标准、结果和单项结论
     inspection_quantity = db.Column(db.Integer, comment='检测数量')  # 本次检测的样本数量
     measurement_unit = db.Column(db.String(20), comment='计量单位')  # 检测数量的计量单位
-    inspection_conclusion = db.Column(db.String(200), nullable=True, comment='检测结论')  # 合格/不合格/异常
-    conclusion_description = db.Column(db.Text, comment='结论描述')  # 对检测结论的详细说明
+    inspection_conclusion = db.Column(db.String(200), nullable=True, comment='检测结果')  # 合格/不合格/异常
+    conclusion_description = db.Column(db.Text, comment='结论描述')  # 对检测结果的详细说明
     is_recheck = db.Column(db.Boolean, default=False, comment='是否复检')  # 标记该报告是否为复检结果
 
     # 六、抽样与检测流程
@@ -69,7 +69,7 @@ class InspectionReport(db.Model):
 
     # 八、报告管理与附件
     report_code = db.Column(db.String(100), nullable=False, unique=True, comment='报告编号')  # 报告的唯一编号
-    report_status = db.Column(db.String(20), nullable=True, default='pending', comment='报告状态')  # 报告当前的处理状态
+    report_status = db.Column(db.String(20), nullable=True, default='草稿', comment='报告状态')  # 报告当前的处理状态
     qrcode_content = db.Column(db.String(200), comment='二维码内容')  # 报告对应的二维码信息
     attachment_paths = db.Column(db.JSON, comment='附件路径')  # 检测原始记录、现场照片等附件的存储路径
 
@@ -128,7 +128,7 @@ class InspectionReport(db.Model):
             'test_items': self.test_items,  # 试验项目
             'inspection_quantity': self.inspection_quantity,  # 检测数量
             'measurement_unit': self.measurement_unit,  # 计量单位
-            'inspection_conclusion': self.inspection_conclusion,  # 检测结论 (合格/不合格/异常)
+            'inspection_conclusion': self.inspection_conclusion,  # 检测结果 (合格/不合格/异常。。。)
             'conclusion_description': self.conclusion_description,  # 结论描述
             'is_recheck': self.is_recheck,  # 是否为复检
             'sampling_method': self.sampling_method,  # 抽样方法
@@ -199,7 +199,7 @@ class InspectionReport(db.Model):
             'test_items': '检测项详情',
             'inspection_quantity': '检测数量',
             'measurement_unit': '计量单位',
-            'inspection_conclusion': '检测结论',
+            'inspection_conclusion': '检测结果',
             'conclusion_description': '结论描述',
             'is_recheck': '是否复检',
             'sampling_method': '抽样方式',

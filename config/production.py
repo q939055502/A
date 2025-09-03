@@ -11,12 +11,12 @@ class ProductionConfig:
     # 应用密钥
     # 作用: 用于加密会话数据、表单数据等
     # 使用: 必须从环境变量获取
-    SECRET_KEY = os.environ.get('SECRET_KEY')
+    SECRET_KEY = os.environ.get('SECRET_KEY') or '2e479b50861520b6ebf1b37ea547a5487114784771568f928d0f256aa6eb2c4e'
 
     # 数据库连接URL
     # 作用: 指定应用连接的数据库
     # 使用: 必须从环境变量获取
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL', 'mysql+pymysql://root:123456@localhost:3306/inspection_report?charset=utf8mb4&unix_socket=/tmp/mysql.sock')
 
     # 跟踪修改
     # 作用: 是否跟踪对象修改
@@ -47,7 +47,7 @@ class ProductionConfig:
     # JWT密钥
     # 作用: 用于JWT令牌的签名和验证
     # 使用: 必须从环境变量获取
-    JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY')
+    JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY')or 'a92b79afb991fb9689b06124fa3382a18b663a0a2170878822226ca91b601bd3'
 
     # 访问令牌过期时间
     # 作用: 设置JWT访问令牌的过期时间
@@ -62,7 +62,7 @@ class ProductionConfig:
     # 令牌位置
     # 作用: 指定从哪里获取JWT令牌
     # 配置: 可以从请求头或Cookie中获取
-    JWT_TOKEN_LOCATION = ['headers', 'cookies']
+    JWT_TOKEN_LOCATION = ['headers']
 
     # JWT Cookie安全设置
     # 作用: 是否仅通过HTTPS传输JWT Cookie
@@ -89,12 +89,18 @@ class ProductionConfig:
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
     MAIL_DEFAULT_SENDER = MAIL_USERNAME
 
+    # 验证码配置
+    # 禁用短信验证码，只使用邮箱验证码
+    ENABLE_SMS_CODE = False
+    ENABLE_EMAIL_CODE = True
+
     # 服务器配置
     IP = '0.0.0.0'
     PORT = 5000
 
     # 日志配置
-    LOG_LEVEL = 'INFO'
+    # 生产环境设为WARNING以减少日志输出
+    LOG_LEVEL = 'WARNING'
     LOG_FILE = 'app.log'
 
     # 功能开关

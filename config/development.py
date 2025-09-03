@@ -11,7 +11,7 @@ class DevelopmentConfig:
     # 应用密钥
     # 作用: 用于加密会话数据、表单数据等
     # 使用: 从环境变量获取，未设置时使用默认值
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev_secret_key'
+    SECRET_KEY = os.environ.get('SECRET_KEY') or '2e479b50861520b6ebf1b37ea547a5487114784771568f928d0f256aa6eb2c4e'
 
     # 数据库连接URL
     # 作用: 指定应用连接的数据库
@@ -19,8 +19,11 @@ class DevelopmentConfig:
     # 直接使用绝对路径，不依赖环境变量
     # MySQL数据库连接配置
     # 请将{username}、{password}、{host}、{port}和{database}替换为实际的MySQL连接信息
-    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:123@localhost:3306/inspection_report?charset=utf8mb4'
-    
+    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:123456@localhost:3306/inspection_report?charset=utf8mb4&unix_socket=/tmp/mysql.sock'
+
+
+
+
     # 跟踪修改
     # 作用: 是否跟踪对象修改
     # 配置: 建议设为False以提高性能
@@ -49,7 +52,7 @@ class DevelopmentConfig:
     # JWT密钥
     # 作用: 用于JWT令牌的签名和验证
     # 使用: 从环境变量获取，未设置时使用默认值
-    JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY') or 'dev_jwt_secret_key'
+    JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY') or 'a92b79afb991fb9689b06124fa3382a18b663a0a2170878822226ca91b601bd3'
 
     # 访问令牌过期时间
     # 作用: 设置JWT访问令牌的过期时间
@@ -82,16 +85,21 @@ class DevelopmentConfig:
     DEBUG = True
 
     # 邮件服务器配置
-    # 敏感信息(MAIL_SERVER, MAIL_USERNAME, MAIL_PASSWORD)从环境变量获取
-    MAIL_SERVER = os.environ.get('MAIL_SERVER') #or 'smtp.qq.com'
+    # 开发环境使用默认配置，生产环境从环境变量获取
+    MAIL_SERVER = os.environ.get('MAIL_SERVER') or 'smtp.qq.com'
     MAIL_PORT = 587  # 邮件服务器端口（通常为587或465）
     MAIL_USE_TLS = True  # 使用TLS加密
-    MAIL_USERNAME = os.environ.get('MAIL_USERNAME') #or '939055502@qq.com'
-    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD') #or 'ncvljspjtufnbgad'
+    MAIL_USERNAME = os.environ.get('MAIL_USERNAME') or '939055502@qq.com'
+    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD') or 'ncvljspjtufnbgad'
     MAIL_DEFAULT_SENDER = MAIL_USERNAME  # 默认发件人
 
+    # 验证码配置
+    # 禁用短信验证码，只使用邮箱验证码
+    ENABLE_SMS_CODE = False
+    ENABLE_EMAIL_CODE = True
+
     # 服务器配置
-    IP = '0.0.0.0'
+    IP = '127.0.0.1'
     PORT = 5000
 
     # 日志配置

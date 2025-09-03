@@ -6,7 +6,8 @@ from datetime import datetime
 import re
 
 def string_to_datetime(time_str, format_str=None):
-    """将时间字符串转换为datetime对象
+    """
+    将时间字符串转换为datetime对象
 
     Args:
         time_str (str): 时间字符串
@@ -48,6 +49,26 @@ def string_to_datetime(time_str, format_str=None):
         elif re.match(r'^\d{8}$', time_str):
             try:
                 return datetime.strptime(time_str, '%Y%m%d')
+            except ValueError:
+                pass
+
+        # 尝试匹配中文日期格式（如：2025年8月13日）
+        chinese_date_pattern = r'^(\d{4})年(\d{1,2})月(\d{1,2})日$'
+        match = re.match(chinese_date_pattern, time_str)
+        if match:
+            year, month, day = match.groups()
+            try:
+                return datetime(int(year), int(month), int(day))
+            except ValueError:
+                pass
+
+        # 尝试匹配带有时分的中文日期格式（如：2025年8月13日 14:30:00）
+        chinese_datetime_pattern = r'^(\d{4})年(\d{1,2})月(\d{1,2})日\s+(\d{1,2}):(\d{1,2}):(\d{1,2})$'
+        match = re.match(chinese_datetime_pattern, time_str)
+        if match:
+            year, month, day, hour, minute, second = match.groups()
+            try:
+                return datetime(int(year), int(month), int(day), int(hour), int(minute), int(second))
             except ValueError:
                 pass
 

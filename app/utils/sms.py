@@ -66,7 +66,14 @@ def send_sms(phone_number, template_param):
     发送短信
     实际项目中，这里应该调用第三方短信服务API
     目前仅模拟发送
+    
+    注意：此功能受配置ENABLE_SMS_CODE控制，如果设置为False，将不会发送短信
     """
+    # 检查是否启用了短信验证码功能
+    if not current_app.config.get('ENABLE_SMS_CODE', False):
+        logger.warning(f"短信验证码功能已禁用，无法向手机 {phone_number} 发送短信")
+        return False, '短信验证码功能已禁用'
+    
     # 模拟短信发送
     logger.info(f"向手机 {phone_number} 发送短信，参数: {template_param}")
 
@@ -111,7 +118,15 @@ def send_sms(phone_number, template_param):
 
 
 def verify_sms_code(phone_number, code):
-    """验证短信验证码"""
+    """验证短信验证码
+    
+    注意：此功能受配置ENABLE_SMS_CODE控制，如果设置为False，将不会验证短信验证码
+    """
+    # 检查是否启用了短信验证码功能
+    if not current_app.config.get('ENABLE_SMS_CODE', False):
+        logger.warning(f"短信验证码功能已禁用，无法验证手机 {phone_number} 的短信验证码")
+        return False, '短信验证码功能已禁用'
+    
     redis_available = is_redis_available()
     stored_code = None
     current_time = time.time()

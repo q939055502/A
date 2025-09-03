@@ -5,6 +5,7 @@ from app.models.user.user import User
 from app.services.permission_service import PermissionService
 from app.utils.status_codes import HTTP_401_UNAUTHORIZED, HTTP_404_NOT_FOUND, HTTP_403_FORBIDDEN
 from flask_jwt_extended import get_jwt_identity
+from app.utils.logger import logger
 
 
 def permission_required(resource, action, scope='all', resource_id_param='id'):
@@ -52,6 +53,7 @@ def permission_required(resource, action, scope='all', resource_id_param='id'):
             # 检查权限
             has_perm = PermissionService.has_user_permission(user, resource, action, scope, resource_id)
             if not has_perm:
+                logger.warning(f'用户 {user_id} 权限不足，需要{resource}:{action}:{scope}权限，请求ID: {getattr(g, "request_id", None)}')
                 return api_response(
                     success=False,
                     code=HTTP_403_FORBIDDEN,
@@ -98,10 +100,11 @@ def role_required(role_name):
             # 检查角色
             has_role = PermissionService.has_user_role(user, role_name)
             if not has_role:
+                logger.warning(f'用户 {user_id} 角色不足，需要{role_name}角色权限，请求ID: {getattr(g, "request_id", None)}')
                 return api_response(
                     success=False,
                     code=HTTP_403_FORBIDDEN,
-                    message=f'权限不足，需要{role_name}角色'
+                    message=f'需要{role_name}角色权限'
                 )
             return view_func(*args, **kwargs)
         return wrapper

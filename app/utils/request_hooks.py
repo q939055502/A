@@ -1,5 +1,4 @@
-from flask import request, g
-from flask_jwt_extended import get_jwt_identity
+from flask import request, g, current_app
 from app.utils.logger import logger
 
 
@@ -12,14 +11,13 @@ def register_before_request(app):
     """
     @app.before_request
     def before_request_hook():
-        # 确保用户ID是字符串类型
-        
-        # 获取访问令牌
-        access_token = request.headers.get('Authorization', '').replace('Bearer ', '')
-        
-        # 打印令牌信息
+        # 打印请求路径
         logger.info(f"请求路径 {request.path}")
-        logger.info(f"Authorization----令牌: {access_token}")
+        
+        # 只在开发环境打印令牌信息
+        if current_app.config.get('ENV') == 'development':
+            access_token = request.headers.get('Authorization', '').replace('Bearer ', '')
+            logger.info(f"Authorization----令牌: {access_token}")
 
 # 使用说明:
 # 在app/__init__.py中导入并注册此钩子

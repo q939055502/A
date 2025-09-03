@@ -208,7 +208,7 @@ with app.app_context():
         db.session.execute(text("DELETE FROM users WHERE username LIKE 'user%'"))
         db.session.commit()
         
-        for i in range(1, 11):
+        for i in range(1, 5):
             username = f'user{i}'
             email = f'{username}@example.com'
             
@@ -223,7 +223,7 @@ with app.app_context():
                 nickname=f'用户{i}',
                 status=1
             )
-            new_user.set_password('111')
+            new_user.set_password('aaa111')
             new_user.roles.append(user_role_assigned)
             
             db.session.add(new_user)

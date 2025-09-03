@@ -279,10 +279,10 @@ class UserService:
             from app.services.permission_service import PermissionService
 
             # 获取普通用户角色
-            user_role = Role.query.filter_by(name='user').first()
+            user_role = Role.query.filter_by(name='无权限角色').first()
             if not user_role:
                 # 如果普通用户角色不存在，创建它
-                user_role = Role(name='user', description='普通用户角色')
+                user_role = Role(name='无权限角色', description='无权限角色')
                 db.session.add(user_role)
 
             # 分配角色
@@ -492,7 +492,7 @@ class UserService:
 
         # 生成验证码
         code = UserService.generate_email_code()
-        logger.info(f'生成{code_type == "register" and "注册" or "重置密码"}验证码: {code}')
+        logger.debug(f'生成{code_type == "register" and "注册" or "重置密码"}验证码: {code}')
 
         # 存储验证码
         current_time = time.time()
@@ -516,11 +516,11 @@ class UserService:
 
         # 发送验证邮件
         print(f'向邮箱 {email} 发送{code_type == "register" and "注册" or "重置密码"}验证码: {code}')
-        logger.info(f'准备向邮箱 {email} 发送{code_type == "register" and "注册" or "重置密码"}验证码: {code}')
+        logger.debug(f'准备向邮箱 {email} 发送{code_type == "register" and "注册" or "重置密码"}验证码: {code}')
 
         # 开发环境下仅打印验证码，不发送实际邮件
         if os.environ.get('FLASK_ENV') == 'development':
-            logger.info(f'开发环境下仅打印{code_type == "register" and "注册" or "重置密码"}验证码: {code}，未发送实际邮件')
+            logger.debug(f'开发环境下仅打印{code_type == "register" and "注册" or "重置密码"}验证码: {code}，未发送实际邮件')
             return True, code
 
         # 生产环境调用实际的邮件发送函数
@@ -530,7 +530,7 @@ class UserService:
                 logger.info(f'找到用户: {user.username} ({user.email})')
                 success, message = UserService.send_verification_email(user, code, code_type)
                 if success:
-                    logger.info(f'{code_type == "register" and "注册" or "重置密码"}验证码邮件发送成功: {message}')
+                    logger.debug(f'{code_type == "register" and "注册" or "重置密码"}验证码邮件发送成功: {message}')
                 else:
                     logger.error(f'发送邮件失败: {message}')
                     return False, message
@@ -541,7 +541,7 @@ class UserService:
             # 不检查用户存在，直接发送邮件
             success, message = UserService.send_verification_email(email, code, code_type)
             if success:
-                logger.info(f'{code_type == "register" and "注册" or "重置密码"}验证码邮件发送成功: {message}')
+                logger.debug(f'{code_type == "register" and "注册" or "重置密码"}验证码邮件发送成功: {message}')
             else:
                 logger.error(f'发送邮件失败: {message}')
                 return False, message
@@ -590,12 +590,25 @@ class UserService:
 
             if test_mode or dev_env:
                 # 在测试模式或开发环境下，打印验证码
-                print(f'===== {code_type == "register" and "注册" or "重置密码"}测试验证码: {code} =====')
+                logger.debug(f'===== {code_type == "register" and "注册" or "重置密码"}测试验证码: {code} =====')
                 logger.info(f'测试/开发环境下模拟发送{code_type == "register" and "注册" or "重置密码"}邮件到 {email}: {msg.body}')
                 return True, f'测试/开发环境下邮件已模拟发送，验证码: {code}'
 
             # 生产环境下实际发送邮件
-            mail.send(msg)
+            try:
+                # 直接尝试发送邮件
+                mail.send(msg)
+            except Exception as e:
+                # 如果连接失败，尝试连接后再发送
+                if 'not connected' in str(e).lower() or 'please run connect() first' in str(e).lower():
+                    try:
+                        mail.connect()
+                        mail.send(msg)
+                    except Exception as connect_error:
+                        logger.error(f'连接邮件服务器后发送失败: {str(connect_error)}')
+                        raise
+                else:
+                    raise
             return True, f'邮件已成功发送到 {email}'
         except Exception as e:
             logger.error(f'发送邮件失败: {str(e)}')

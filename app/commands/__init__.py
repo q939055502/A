@@ -10,7 +10,7 @@ def init_commands(app):
         from .init_permissions import register_command as register_init_permissions
         register_init_permissions(app)
     except ImportError as e:
-        print(f"导入并注册初始化权限命令失败: {e}")
+        logger.error(f"导入并注册初始化权限命令失败: {e}")
     
     # 可以在这里添加其他命令的导入和注册
     # try:

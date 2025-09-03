@@ -55,9 +55,24 @@ class StaffService:
 
             # 分页查询
             staff_list = query.order_by(User.id.desc()).offset((page - 1) * per_page).limit(per_page).all()
+            
+            # 查询staff_list里面的每个用户的角色，并且添加到对应的用户里面
+            # 转换为字典列表，并为每个用户添加角色信息
+            staff_dicts = []
+            for staff in staff_list:
+                staff_dict = staff.to_dict()
+                # 获取用户角色
+                roles = staff.roles
+                # 转换角色为字典列表
+                role_dicts = [{
+                    'id': role.id,
+                    'name': role.name,
+                    'description': role.description
+                } for role in roles]
+                # 添加角色信息到用户字典
+                staff_dict['roles'] = role_dicts
+                staff_dicts.append(staff_dict)
 
-            # 转换为字典列表
-            staff_dicts = [staff.to_dict() for staff in staff_list]
 
             return staff_dicts, total
         except Exception as e:

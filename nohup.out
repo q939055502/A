@@ -3706,3 +3706,251 @@ ERROR:app:登录过程中出错: (pymysql.err.OperationalError) (2003, "Can't co
 INFO:app:登录方法返回: user=False, error=登录失败: (pymysql.err.OperationalError) (2003, "Can't connect to MySQL server on 'localhost' ([Errno 111] Connection refused)")
 (Background on this error at: https://sqlalche.me/e/14/e3q8)
 INFO:waitress:Serving on http://127.0.0.1:5000
+INFO:app:请求路径 /user/logout
+INFO:app:请求路径 /auth/refresh
+INFO:app:请求路径 /user/logout
+INFO:app:请求路径 /report/get-total-active-reports
+INFO:app:请求路径 /user/logout
+INFO:app:请求路径 /user/logout
+INFO:app:请求路径 /auth/verify
+INFO:app:请求路径 /user/logout
+INFO:app:请求路径 /user/login
+DEBUG:app:通过用户名 admin 查询用户: <User admin (ID: 1)>
+INFO:app:登录验证: 查找用户结果=True
+INFO:app:开始生成令牌: 用户ID=1, remember_me=False, 类型=<class 'bool'>
+INFO:app:生成令牌: 用户ID=1 (类型: <class 'int'>), 转换后=1, remember_me=False
+INFO:app:使用配置的刷新令牌过期时间: 3 days, 0:00:00
+INFO:app:使用配置的访问令牌过期时间: 0:30:00
+INFO:app:令牌生成成功: access_token长度=291, refresh_token长度=292
+INFO:app:令牌生成结果: access_token=True, refresh_token=True
+INFO:app:令牌过期时间设置: remember_me=False, 刷新令牌过期时间=1天
+INFO:app:登录方法返回: user=True, error=None
+INFO:app:请求路径 /report/get-total-active-reports
+INFO:app:请求路径 /user/logout
+INFO:app:用户 admin (ID: 1) 注销成功
+INFO:app:请求路径 /auth/verify
+INFO:app:请求路径 /user/logout
+INFO:app:请求路径 /user/login
+DEBUG:app:通过用户名 admin 查询用户: <User admin (ID: 1)>
+INFO:app:登录验证: 查找用户结果=True
+INFO:app:开始生成令牌: 用户ID=1, remember_me=False, 类型=<class 'bool'>
+INFO:app:生成令牌: 用户ID=1 (类型: <class 'int'>), 转换后=1, remember_me=False
+INFO:app:使用配置的刷新令牌过期时间: 3 days, 0:00:00
+INFO:app:使用配置的访问令牌过期时间: 0:30:00
+INFO:app:令牌生成成功: access_token长度=291, refresh_token长度=292
+INFO:app:令牌生成结果: access_token=True, refresh_token=True
+INFO:app:令牌过期时间设置: remember_me=False, 刷新令牌过期时间=1天
+INFO:app:登录方法返回: user=True, error=None
+INFO:app:请求路径 /report/get-total-active-reports
+INFO:app:请求路径 /user/get-user-info
+INFO:app:获取用户 admin (ID: 1) 信息成功
+INFO:app:请求路径 /admin/get_staff_list
+INFO:app:请求路径 /admin/get_staff_detail/6
+INFO:app:请求路径 /admin/get_staff_detail/5
+INFO:app:请求路径 /admin/get_staff_detail/6
+INFO:app:请求路径 /admin/get_staff_detail/5
+INFO:app:请求路径 /admin/get_staff_detail/4
+INFO:app:请求路径 /admin/get_staff_detail/6
+INFO:app:请求路径 /admin/get_staff_detail/5
+INFO:app:请求路径 /announcement/get-latest
+INFO:app:请求路径 /user/get-user-info
+INFO:app:获取用户 admin (ID: 1) 信息成功
+INFO:app:请求路径 /user/get-user-info
+INFO:app:获取用户 admin (ID: 1) 信息成功
+INFO:app:请求路径 /admin/get_role_list
+INFO:app:请求路径 /user/get-user-info
+INFO:app:获取用户 admin (ID: 1) 信息成功
+INFO:app:请求路径 /admin/get_staff_list
+INFO:app:请求路径 /admin/get_staff_detail/6
+INFO:app:请求路径 /report/get-total-active-reports
+INFO:app:请求路径 /user/logout
+INFO:app:用户 admin (ID: 1) 注销成功
+INFO:app:请求路径 /auth/verify
+INFO:app:请求路径 /user/logout
+INFO:app:请求路径 /user/login
+DEBUG:app:通过用户名 admin 查询用户: <User admin (ID: 1)>
+INFO:app:登录验证: 查找用户结果=True
+INFO:app:开始生成令牌: 用户ID=1, remember_me=False, 类型=<class 'bool'>
+INFO:app:生成令牌: 用户ID=1 (类型: <class 'int'>), 转换后=1, remember_me=False
+INFO:app:使用配置的刷新令牌过期时间: 3 days, 0:00:00
+INFO:app:使用配置的访问令牌过期时间: 0:30:00
+INFO:app:令牌生成成功: access_token长度=291, refresh_token长度=292
+INFO:app:令牌生成结果: access_token=True, refresh_token=True
+INFO:app:令牌过期时间设置: remember_me=False, 刷新令牌过期时间=1天
+INFO:app:登录方法返回: user=True, error=None
+INFO:app:请求路径 /report/get-total-active-reports
+INFO:app:请求路径 /user/get-user-info
+INFO:app:请求路径 /admin/get_staff_list
+INFO:app:获取用户 admin (ID: 1) 信息成功
+INFO:app:请求路径 /admin/get_staff_detail/6
+INFO:app:请求路径 /admin/get_staff_detail/5
+INFO:app:请求路径 /admin/get_staff_detail/5
+INFO:app:请求路径 /report/get-total-active-reports
+INFO:app:请求路径 /user/logout
+INFO:app:用户 admin (ID: 1) 注销成功
+INFO:app:请求路径 /announcement/get-latest
+INFO:app:请求路径 /report/get-total-active-reports
+INFO:app:请求路径 /auth/verify
+INFO:app:请求路径 /user/logout
+INFO:app:请求路径 /user/login
+DEBUG:app:通过用户名 user5 查询用户: <User user5 (ID: 6)>
+INFO:app:登录验证: 查找用户结果=True
+INFO:app:开始生成令牌: 用户ID=6, remember_me=False, 类型=<class 'bool'>
+INFO:app:生成令牌: 用户ID=6 (类型: <class 'int'>), 转换后=6, remember_me=False
+INFO:app:使用配置的刷新令牌过期时间: 3 days, 0:00:00
+INFO:app:使用配置的访问令牌过期时间: 0:30:00
+INFO:app:令牌生成成功: access_token长度=291, refresh_token长度=292
+INFO:app:令牌生成结果: access_token=True, refresh_token=True
+INFO:app:令牌过期时间设置: remember_me=False, 刷新令牌过期时间=1天
+INFO:app:登录方法返回: user=True, error=None
+INFO:app:请求路径 /report/get-total-active-reports
+INFO:app:请求路径 /report/get-total-active-reports
+INFO:app:请求路径 /user/logout
+INFO:app:用户 user5 (ID: 6) 注销成功
+INFO:app:请求路径 /auth/verify
+INFO:app:请求路径 /user/logout
+INFO:app:请求路径 /user/login
+DEBUG:app:通过用户名 admin 查询用户: <User admin (ID: 1)>
+INFO:app:登录验证: 查找用户结果=True
+INFO:app:开始生成令牌: 用户ID=1, remember_me=False, 类型=<class 'bool'>
+INFO:app:生成令牌: 用户ID=1 (类型: <class 'int'>), 转换后=1, remember_me=False
+INFO:app:使用配置的刷新令牌过期时间: 3 days, 0:00:00
+INFO:app:使用配置的访问令牌过期时间: 0:30:00
+INFO:app:令牌生成成功: access_token长度=291, refresh_token长度=292
+INFO:app:令牌生成结果: access_token=True, refresh_token=True
+INFO:app:令牌过期时间设置: remember_me=False, 刷新令牌过期时间=1天
+INFO:app:登录方法返回: user=True, error=None
+INFO:app:请求路径 /report/get-total-active-reports
+INFO:app:请求路径 /report/get-reports
+INFO:app:请求路径 /report/get-total-active-reports
+INFO:app:请求路径 /admin/get_role_list
+INFO:app:请求路径 /user/get-user-info
+INFO:app:获取用户 admin (ID: 1) 信息成功
+INFO:app:请求路径 /admin/get_staff_list
+INFO:app:请求路径 /admin/get_staff_detail/6
+INFO:app:请求路径 /admin/get_staff_detail/5
+INFO:app:请求路径 /announcement/get-latest
+INFO:app:请求路径 /user/get-user-info
+INFO:app:获取用户 admin (ID: 1) 信息成功
+INFO:app:请求路径 /user/get-user-info
+INFO:app:获取用户 admin (ID: 1) 信息成功
+INFO:app:请求路径 /admin/get_role_list
+INFO:app:请求路径 /user/get-user-info
+INFO:app:获取用户 admin (ID: 1) 信息成功
+INFO:app:请求路径 /admin/get_staff_list
+INFO:app:请求路径 /admin/get_staff_detail/6
+INFO:app:请求路径 /admin/get_staff_detail/5
+INFO:app:请求路径 /admin/get_staff_detail/6
+INFO:app:请求路径 /admin/get_staff_detail/5
+INFO:app:请求路径 /user/get-user-info
+INFO:app:请求路径 /announcement/get-latest
+INFO:app:获取用户 admin (ID: 1) 信息成功
+INFO:app:请求路径 /user/get-user-info
+INFO:app:获取用户 admin (ID: 1) 信息成功
+INFO:app:请求路径 /user/get-user-info
+INFO:app:请求路径 /admin/get_role_list
+INFO:app:获取用户 admin (ID: 1) 信息成功
+INFO:app:请求路径 /admin/get_staff_list
+INFO:app:请求路径 /admin/get_staff_detail/6
+INFO:app:请求路径 /admin/get_staff_detail/5
+INFO:app:请求路径 /admin/get_staff_detail/6
+INFO:app:请求路径 /admin/get_staff_detail/5
+INFO:app:请求路径 /admin/get_staff_detail/6
+INFO:app:请求路径 /admin/get_staff_detail/6
+INFO:app:请求路径 /announcement/get-latest
+INFO:app:请求路径 /user/get-user-info
+INFO:app:获取用户 admin (ID: 1) 信息成功
+INFO:app:请求路径 /user/get-user-info
+INFO:app:获取用户 admin (ID: 1) 信息成功
+INFO:app:请求路径 /user/get-user-info
+INFO:app:请求路径 /admin/get_role_list
+INFO:app:获取用户 admin (ID: 1) 信息成功
+INFO:app:请求路径 /admin/get_staff_list
+INFO:app:请求路径 /admin/get_staff_detail/6
+INFO:app:请求路径 /admin/get_staff_detail/5
+INFO:app:请求路径 /announcement/get-latest
+INFO:app:请求路径 /user/get-user-info
+INFO:app:获取用户 admin (ID: 1) 信息成功
+INFO:app:请求路径 /user/get-user-info
+INFO:app:获取用户 admin (ID: 1) 信息成功
+INFO:app:请求路径 /user/get-user-info
+INFO:app:请求路径 /admin/get_role_list
+INFO:app:获取用户 admin (ID: 1) 信息成功
+INFO:app:请求路径 /admin/get_staff_list
+INFO:app:请求路径 /admin/get_staff_detail/6
+INFO:app:请求路径 /admin/update_staff/6
+INFO:app:请求路径 /admin/update_staff/6
+INFO:app:请求路径 /admin/get_staff_detail/2
+INFO:app:请求路径 /admin/get_staff_role/2
+INFO:app:请求路径 /admin/get_role_permissions/2
+INFO:app:请求路径 /admin/get_role_permissions/2
+INFO:app:请求路径 /admin/update_staff_roles/2
+INFO:app:请求路径 /admin/get_staff_detail/2
+INFO:app:请求路径 /admin/update_staff/2
+INFO:app:请求路径 /announcement/get-latest
+INFO:app:请求路径 /user/get-user-info
+INFO:app:获取用户 admin (ID: 1) 信息成功
+INFO:app:请求路径 /user/get-user-info
+INFO:app:获取用户 admin (ID: 1) 信息成功
+INFO:app:请求路径 /user/get-user-info
+INFO:app:请求路径 /admin/get_role_list
+INFO:app:获取用户 admin (ID: 1) 信息成功
+INFO:app:请求路径 /admin/get_staff_list
+INFO:app:请求路径 /admin/get_staff_detail/2
+INFO:app:请求路径 /admin/get_staff_permissions/2
+INFO:app:请求路径 /admin/get_permissions_list
+INFO:app:请求路径 /admin/update_staff_permissions/2
+INFO:app:请求路径 /admin/get_staff_detail/2
+INFO:app:请求路径 /admin/get_staff_permissions/2
+INFO:app:请求路径 /admin/get_staff_detail/6
+INFO:app:请求路径 /admin/get_staff_detail/5
+INFO:app:请求路径 /admin/get_staff_detail/6
+INFO:app:请求路径 /admin/update_staff/6
+INFO:app:请求路径 /announcement/get-latest
+INFO:app:请求路径 /user/get-user-info
+INFO:app:获取用户 admin (ID: 1) 信息成功
+INFO:app:请求路径 /user/get-user-info
+INFO:app:获取用户 admin (ID: 1) 信息成功
+INFO:app:请求路径 /admin/get_role_list
+INFO:app:请求路径 /user/get-user-info
+INFO:app:获取用户 admin (ID: 1) 信息成功
+INFO:app:请求路径 /admin/get_staff_list
+INFO:app:请求路径 /user/get-user-info
+INFO:app:请求路径 /announcement/get-latest
+INFO:app:获取用户 admin (ID: 1) 信息成功
+INFO:app:请求路径 /user/get-user-info
+INFO:app:获取用户 admin (ID: 1) 信息成功
+INFO:app:请求路径 /user/get-user-info
+INFO:app:请求路径 /admin/get_role_list
+INFO:app:获取用户 admin (ID: 1) 信息成功
+INFO:app:请求路径 /admin/get_staff_list
+INFO:app:请求路径 /user/logout
+INFO:app:用户 admin (ID: 1) 注销成功
+INFO:app:请求路径 /auth/verify
+INFO:app:请求路径 /user/logout
+INFO:app:请求路径 /user/login
+DEBUG:app:通过用户名 admin 查询用户: <User admin (ID: 1)>
+INFO:app:登录验证: 查找用户结果=True
+INFO:app:开始生成令牌: 用户ID=1, remember_me=False, 类型=<class 'bool'>
+INFO:app:生成令牌: 用户ID=1 (类型: <class 'int'>), 转换后=1, remember_me=False
+INFO:app:使用配置的刷新令牌过期时间: 3 days, 0:00:00
+INFO:app:使用配置的访问令牌过期时间: 0:30:00
+INFO:app:令牌生成成功: access_token长度=291, refresh_token长度=292
+INFO:app:令牌生成结果: access_token=True, refresh_token=True
+INFO:app:令牌过期时间设置: remember_me=False, 刷新令牌过期时间=1天
+INFO:app:登录方法返回: user=True, error=None
+INFO:app:请求路径 /report/get-total-active-reports
+INFO:app:请求路径 /user/get-user-info
+INFO:app:请求路径 /admin/get_staff_list
+INFO:app:获取用户 admin (ID: 1) 信息成功
+INFO:app:请求路径 /admin/get_staff_list
+INFO:app:请求路径 /admin/get_staff_list
+INFO:app:请求路径 /user/get-user-info
+INFO:app:请求路径 /announcement/get-latest
+INFO:app:获取用户 admin (ID: 1) 信息成功
+INFO:app:请求路径 /user/get-user-info
+INFO:app:获取用户 admin (ID: 1) 信息成功
+INFO:app:请求路径 /user/get-user-info
+INFO:app:请求路径 /admin/get_role_list
+INFO:app:获取用户 admin (ID: 1) 信息成功
+INFO:app:请求路径 /admin/get_staff_list
